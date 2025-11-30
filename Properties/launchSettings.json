@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Proyecto_Heap": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
