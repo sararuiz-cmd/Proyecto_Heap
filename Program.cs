@@ -1,252 +1,133 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HeapSortPacientes
+namespace HeapGravedad
 {
-    // ============================================
-    // Clase Paciente
-    // ============================================
     public class Paciente
     {
-        public string Nombre { get; set; }
-        public int Gravedad { get; set; }  // 1 = leve, 5 = crítico
+        public int Gravedad { get; set; }
 
-        public Paciente(string nombre, int gravedad)
+        public Paciente(int gravedad)
         {
-            Nombre = nombre;
             Gravedad = gravedad;
         }
     }
 
-    // ============================================
-    // Clase Heap (Max-Heap)
-    // ============================================
-    public class Heap
+    public class MaxHeap
     {
-        private List<Paciente> datos;
+        private List<Paciente> heap = new List<Paciente>();
 
-        public Heap()
-        {
-            datos = new List<Paciente>();
-        }
-
-        // Insertar un paciente en el heap
+        // Insertar paciente
         public void Insert(Paciente p)
         {
-            datos.Add(p);
-            int index = datos.Count - 1;
+            heap.Add(p);
+            Subir(heap.Count - 1);
+        }
 
-            // Reacomodar hacia arriba
+        private void Subir(int index)
+        {
             while (index > 0)
             {
                 int padre = (index - 1) / 2;
 
-                if (datos[index].Gravedad > datos[padre].Gravedad)
+                if (heap[index].Gravedad > heap[padre].Gravedad)
                 {
-                    (datos[index], datos[padre]) = (datos[padre], datos[index]);
+                    (heap[index], heap[padre]) = (heap[padre], heap[index]);
                     index = padre;
                 }
-                else
-                    break;
+                else break;
             }
         }
 
-        // Construir montículo inicial (para HeapSort)
-        public void BuildHeap(List<Paciente> lista)
+        // Extraer el paciente con mayor gravedad
+        public Paciente ExtraerMax()
         {
-            datos = lista;
-
-            // Aplicar heapify desde la mitad hacia arriba
-            for (int i = datos.Count / 2 - 1; i >= 0; i--)
-                Heapify(i);
-        }
-
-        // Heapify (reacomoda hacia abajo)
-        private void Heapify(int i)
-        {
-            int mayor = i;
-            int izquierda = 2 * i + 1;
-            int derecha = 2 * i + 2;
-
-            if (izquierda < datos.Count && datos[izquierda].Gravedad > datos[mayor].Gravedad)
-                mayor = izquierda;
-
-            if (derecha < datos.Count && datos[derecha].Gravedad > datos[mayor].Gravedad)
-                mayor = derecha;
-
-            if (mayor != i)
-            {
-                (datos[mayor], datos[i]) = (datos[i], datos[mayor]);
-                Heapify(mayor);
-            }
-        }
-
-        // Extraer al paciente de mayor gravedad
-        public Paciente ExtractMax()
-        {
-            if (datos.Count == 0)
+            if (heap.Count == 0)
                 return null;
 
-            Paciente maximo = datos[0];
+            Paciente max = heap[0];
+            heap[0] = heap[^1];
+            heap.RemoveAt(heap.Count - 1);
 
-            datos[0] = datos[datos.Count - 1];
-            datos.RemoveAt(datos.Count - 1);
+            Bajar(0);
+            return max;
+        }
 
-            Heapify(0);
+        private void Bajar(int index)
+        {
+            int tamaño = heap.Count;
 
-            return maximo;
+            while (true)
+            {
+                int izq = 2 * index + 1;
+                int der = 2 * index + 2;
+                int mayor = index;
+
+                if (izq < tamaño && heap[izq].Gravedad > heap[mayor].Gravedad)
+                    mayor = izq;
+
+                if (der < tamaño && heap[der].Gravedad > heap[mayor].Gravedad)
+                    mayor = der;
+
+                if (mayor != index)
+                {
+                    (heap[index], heap[mayor]) = (heap[mayor], heap[index]);
+                    index = mayor;
+                }
+                else break;
+            }
         }
 
         // HeapSort
-        public List<Paciente> HeapSort(List<Paciente> lista)
+        public List<Paciente> Ordenar()
         {
-            BuildHeap(lista);
-            List<Paciente> ordenados = new List<Paciente>();
+            List<Paciente> orden = new List<Paciente>();
 
-            while (datos.Count > 0)
-                ordenados.Add(ExtractMax());
+            while (heap.Count > 0)
+                orden.Add(ExtraerMax());
 
-            return ordenados;
-        }
-
-        // Mostrar lista (para consola)
-        public static void MostrarLista(List<Paciente> lista)
-        {
-            foreach (var p in lista)
-                Console.WriteLine($"Paciente: {p.Nombre} | Gravedad: {p.Gravedad}");
+            return orden;
         }
     }
 
-    // ============================================
-    // PROGRAMA PRINCIPAL CON MENÚ
-    // ============================================
     class Program
     {
-        static List<Paciente> listaPacientes = new List<Paciente>();
-        static Heap heap = new Heap();
-
         static void Main(string[] args)
         {
-            int opcion;
+            // tamaño de la talla
+            int n = 10;
 
-            do
+            Random random = new Random();
+            MaxHeap heap = new MaxHeap();
+
+            Console.WriteLine($"\nGenerando {n} elementos...");
+
+            // Insertar datos grandes para análisis
+            for (int i = 0; i < n; i++)
             {
-                Console.Clear();
-                Console.WriteLine("=======================================");
-                Console.WriteLine("   SISTEMA DE TRIAGE MÉDICO - HEAP SORT");
-                Console.WriteLine("=======================================\n");
-
-                Console.WriteLine("1. Agregar paciente");
-                Console.WriteLine("2. Mostrar lista de pacientes");
-                Console.WriteLine("3. Ordenar pacientes por gravedad (HeapSort)");
-                Console.WriteLine("4. Atender paciente más urgente (ExtractMax)");
-                Console.WriteLine("5. Salir\n");
-
-                Console.Write("Seleccione una opción: ");
-                opcion = int.Parse(Console.ReadLine());
-
-                Console.WriteLine();
-
-                switch (opcion)
-                {
-                    case 1:
-                        AgregarPaciente();
-                        break;
-
-                    case 2:
-                        MostrarPacientes();
-                        break;
-
-                    case 3:
-                        OrdenarPacientes();
-                        break;
-
-                    case 4:
-                        AtenderPacienteMax();
-                        break;
-
-                    case 5:
-                        Console.WriteLine("Saliendo del sistema...");
-                        break;
-
-                    default:
-                        Console.WriteLine("Opción no válida");
-                        break;
-                }
-
-                Console.WriteLine("\nPresione ENTER para continuar...");
-                Console.ReadLine();
-
-            } while (opcion != 5);
-        }
-
-        // ================= MÉTODOS DEL MENÚ =================
-
-        static void AgregarPaciente()
-        {
-            Console.Write("Nombre del paciente: ");
-            string nombre = Console.ReadLine();
-
-            int gravedad;
-            do
-            {
-                Console.WriteLine("");
-                Console.WriteLine("====================================");
-                Console.WriteLine("Gravedad 1: Muy leve ");
-                Console.WriteLine("Gravedad 2: Leve ");
-                Console.WriteLine("Gravedad 3: Moderado ");
-                Console.WriteLine("Gravedad 4: Grave ");
-                Console.WriteLine("Gravedad 5: Crítico ");
-                Console.WriteLine("====================================");
-                Console.WriteLine("");
-                Console.Write("Gravedad (1-5): ");
-                gravedad = int.Parse(Console.ReadLine());
-            } while (gravedad < 1 || gravedad > 5);
-
-            Paciente p = new Paciente(nombre, gravedad);
-            listaPacientes.Add(p);
-            heap.Insert(p);
-
-            Console.WriteLine("Paciente agregado correctamente.");
-        }
-
-        static void MostrarPacientes()
-        {
-            if (listaPacientes.Count == 0)
-            {
-                Console.WriteLine("No hay pacientes registrados.");
-                return;
+                int gravedad = random.Next(1, n); // Valor entre 1–n elementos
+                heap.Insert(new Paciente(gravedad));
             }
 
-            Console.WriteLine("LISTA DE PACIENTES:");
-            Heap.MostrarLista(listaPacientes);
-        }
+            Console.WriteLine("Datos generados. Iniciando HeapSort...");
 
-        static void OrdenarPacientes()
-        {
-            if (listaPacientes.Count == 0)
-            {
-                Console.WriteLine("No hay pacientes para ordenar.");
-                return;
-            }
+            var inicio = DateTime.Now;
+            List<Paciente> ordenados = heap.Ordenar();
+            var fin = DateTime.Now;
 
-            var ordenados = heap.HeapSort(new List<Paciente>(listaPacientes));
+            TimeSpan t = fin - inicio;
 
-            Console.WriteLine("PACIENTES ORDENADOS POR GRAVEDAD (HeapSort):");
-            Heap.MostrarLista(ordenados);
-        }
+            Console.WriteLine($"\nHeapSort completado.");
+            Console.WriteLine($"Cantidad total: {n}");
+            Console.WriteLine($"Tiempo: {t.TotalMilliseconds} ms");
+            Console.WriteLine($"Tiempo: {t.TotalSeconds} s");
 
-        static void AtenderPacienteMax()
-        {
-            var paciente = heap.ExtractMax();
+            // Mostrar solo primeros valores para no saturar la consola
+            Console.Write("\nPrimeros 20 valores ordenados: ");
+            for (int i = 0; i < Math.Min(20, ordenados.Count); i++)
+                Console.Write(ordenados[i].Gravedad + " ");
 
-            if (paciente == null)
-            {
-                Console.WriteLine("No hay pacientes por atender.");
-                return;
-            }
-
-            Console.WriteLine($"Se está atendiendo a: {paciente.Nombre} (Gravedad {paciente.Gravedad})");
+            Console.WriteLine("\n\n(Visualización limitada para evitar saturar la consola)");
         }
     }
 }
