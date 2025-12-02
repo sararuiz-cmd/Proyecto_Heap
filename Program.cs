@@ -21,72 +21,59 @@ namespace HeapGravedad
         public void Insert(Paciente p)
         {
             heap.Add(p);
-            Subir(heap.Count - 1);
         }
 
-        private void Subir(int index)
+        // HeapSort in-place al estilo clásico
+        public void Ordenar()
         {
-            while (index > 0)
-            {
-                int padre = (index - 1) / 2;
+            int n = heap.Count;
 
-                if (heap[index].Gravedad > heap[padre].Gravedad)
-                {
-                    (heap[index], heap[padre]) = (heap[padre], heap[index]);
-                    index = padre;
-                }
-                else break;
+            // FASE 1: Construir el heap (max heap)
+            for (int i = n / 2 - 1; i >= 0; i--)
+            {
+                Heapify(n, i);
+            }
+
+            // FASE 2: Extraer elementos uno por uno del heap
+            for (int i = n - 1; i > 0; i--)
+            {
+                // Mover la raíz actual al final
+                (heap[0], heap[i]) = (heap[i], heap[0]);
+
+                // Llamar a heapify en el heap reducido
+                Heapify(i, 0);
             }
         }
 
-        // Extraer el paciente con mayor gravedad
-        public Paciente ExtraerMax()
+        // Heapify recursivo que mantiene la propiedad de max heap
+        private void Heapify(int tamaño, int index)
         {
-            if (heap.Count == 0)
-                return null;
+            int mayor = index;                // Inicialmente, la raíz es el mayor
+            int izq = 2 * index + 1;          // Índice del hijo izquierdo
+            int der = 2 * index + 2;          // Índice del hijo derecho
 
-            Paciente max = heap[0];
-            heap[0] = heap[^1];
-            heap.RemoveAt(heap.Count - 1);
+            if (izq < tamaño && heap[izq].Gravedad > heap[mayor].Gravedad)
+                mayor = izq;
 
-            Bajar(0);
-            return max;
-        }
+            if (der < tamaño && heap[der].Gravedad > heap[mayor].Gravedad)
+                mayor = der;
 
-        private void Bajar(int index)
-        {
-            int tamaño = heap.Count;
-
-            while (true)
+            if (mayor != index)
             {
-                int izq = 2 * index + 1;
-                int der = 2 * index + 2;
-                int mayor = index;
+                (heap[index], heap[mayor]) = (heap[mayor], heap[index]);
 
-                if (izq < tamaño && heap[izq].Gravedad > heap[mayor].Gravedad)
-                    mayor = izq;
-
-                if (der < tamaño && heap[der].Gravedad > heap[mayor].Gravedad)
-                    mayor = der;
-
-                if (mayor != index)
-                {
-                    (heap[index], heap[mayor]) = (heap[mayor], heap[index]);
-                    index = mayor;
-                }
-                else break;
+                // Llamada recursiva
+                Heapify(tamaño, mayor);
             }
         }
 
-        // HeapSort
-        public List<Paciente> Ordenar()
+        // Función para obtener las gravedades ordenadas (opcional)
+        public List<int> GetGravedades()
         {
-            List<Paciente> orden = new List<Paciente>();
-
-            while (heap.Count > 0)
-                orden.Add(ExtraerMax());
-
-            return orden;
+            List<int> lista = new List<int>();
+            foreach (var p in heap)
+                lista.Add(p.Gravedad);
+            return lista;
         }
     }
 
@@ -94,25 +81,22 @@ namespace HeapGravedad
     {
         static void Main(string[] args)
         {
-            // tamaño de la talla
             int n = 10;
-
             Random random = new Random();
             MaxHeap heap = new MaxHeap();
 
             Console.WriteLine($"\nGenerando {n} elementos...");
 
-            // Insertar datos grandes para análisis
             for (int i = 0; i < n; i++)
             {
-                int gravedad = random.Next(1, n); // Valor entre 1–n elementos
+                int gravedad = random.Next(1, n);
                 heap.Insert(new Paciente(gravedad));
             }
 
             Console.WriteLine("Datos generados. Iniciando HeapSort...");
 
             var inicio = DateTime.Now;
-            List<Paciente> ordenados = heap.Ordenar();
+            heap.Ordenar();
             var fin = DateTime.Now;
 
             TimeSpan t = fin - inicio;
@@ -122,10 +106,11 @@ namespace HeapGravedad
             Console.WriteLine($"Tiempo: {t.TotalMilliseconds} ms");
             Console.WriteLine($"Tiempo: {t.TotalSeconds} s");
 
-            // Mostrar solo primeros valores para no saturar la consola
+            // Mostrar resultados
             Console.Write("\nPrimeros 20 valores ordenados: ");
+            var ordenados = heap.GetGravedades();
             for (int i = 0; i < Math.Min(20, ordenados.Count); i++)
-                Console.Write(ordenados[i].Gravedad + " ");
+                Console.Write(ordenados[i] + " ");
 
             Console.WriteLine("\n\n(Visualización limitada para evitar saturar la consola)");
         }
