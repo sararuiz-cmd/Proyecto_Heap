@@ -105,9 +105,9 @@ namespace HeapGravedad
             Console.WriteLine($"Cantidad total: {n}");
             Console.WriteLine($"Tiempo: {t.TotalMilliseconds} ms");
             Console.WriteLine($"Tiempo: {t.TotalSeconds} s");
-
+            Console.WriteLine($"Consumo de memoria en bytes: {GC.GetTotalMemory(false)}");
             // Mostrar resultados
-            Console.Write("\nPrimeros 20 valores ordenados: ");
+            Console.Write($"\nPrimeros {n} valores ordenados: ");
             var ordenados = heap.GetGravedades();
             for (int i = 0; i < Math.Min(20, ordenados.Count); i++)
                 Console.Write(ordenados[i] + " ");
