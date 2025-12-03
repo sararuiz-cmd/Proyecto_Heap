@@ -1,118 +1,101 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace HeapGravedad
+class HeapSortExample
 {
-    public class Paciente
+    public static void HeapSort(int[] A)
     {
-        public int Gravedad { get; set; }
+        int n = A.Length;
+        for (int i = n / 2 - 1; i >= 0; i--)
+            Heapify(A, n, i);
 
-        public Paciente(int gravedad)
+        for (int i = n - 1; i > 0; i--)
         {
-            Gravedad = gravedad;
+            (A[0], A[i]) = (A[i], A[0]);
+            Heapify(A, i, 0);
         }
     }
 
-    public class MaxHeap
+    public static void Heapify(int[] A, int n, int i)
     {
-        private List<Paciente> heap = new List<Paciente>();
+        int largest = i;
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
 
-        // Insertar paciente
-        public void Insert(Paciente p)
+        if (left < n && A[left] > A[largest])
+            largest = left;
+        if (right < n && A[right] > A[largest])
+            largest = right;
+
+        if (largest != i)
         {
-            heap.Add(p);
-        }
-
-        // HeapSort in-place al estilo clásico
-        public void Ordenar()
-        {
-            int n = heap.Count;
-
-            // FASE 1: Construir el heap (max heap)
-            for (int i = n / 2 - 1; i >= 0; i--)
-            {
-                Heapify(n, i);
-            }
-
-            // FASE 2: Extraer elementos uno por uno del heap
-            for (int i = n - 1; i > 0; i--)
-            {
-                // Mover la raíz actual al final
-                (heap[0], heap[i]) = (heap[i], heap[0]);
-
-                // Llamar a heapify en el heap reducido
-                Heapify(i, 0);
-            }
-        }
-
-        // Heapify recursivo que mantiene la propiedad de max heap
-        private void Heapify(int tamaño, int index)
-        {
-            int mayor = index;                // Inicialmente, la raíz es el mayor
-            int izq = 2 * index + 1;          // Índice del hijo izquierdo
-            int der = 2 * index + 2;          // Índice del hijo derecho
-
-            if (izq < tamaño && heap[izq].Gravedad > heap[mayor].Gravedad)
-                mayor = izq;
-
-            if (der < tamaño && heap[der].Gravedad > heap[mayor].Gravedad)
-                mayor = der;
-
-            if (mayor != index)
-            {
-                (heap[index], heap[mayor]) = (heap[mayor], heap[index]);
-
-                // Llamada recursiva
-                Heapify(tamaño, mayor);
-            }
-        }
-
-        // Función para obtener las gravedades ordenadas (opcional)
-        public List<int> GetGravedades()
-        {
-            List<int> lista = new List<int>();
-            foreach (var p in heap)
-                lista.Add(p.Gravedad);
-            return lista;
+            (A[i], A[largest]) = (A[largest], A[i]);
+            Heapify(A, n, largest);
         }
     }
 
-    class Program
+    public static void PrintArrayParcial(int[] A, int max = 10)
     {
-        static void Main(string[] args)
+        for (int i = 0; i < Math.Min(max, A.Length); i++)
+            Console.Write(A[i] + " ");
+        if (A.Length > max)
+            Console.Write("...");
+        Console.WriteLine();
+    }
+
+    static long MemoriaArreglo(int[] arr)
+    {
+        return 24 + (arr.Length * 4);
+    }
+
+    static void Main()
+    {
+        int n = 1_000_000;
+        Random random = new Random();
+
+        void MedirCaso(string nombre, Func<int[]> generar)
         {
-            int n = 1000000;
-            Random random = new Random();
-            MaxHeap heap = new MaxHeap();
+            int[] arreglo = generar();
+            Console.WriteLine($"=== {nombre.ToUpper()} ===");
 
-            Console.WriteLine($"\nGenerando {n} elementos...");
+            Console.Write("Original: ");
+            PrintArrayParcial(arreglo);
 
-            for (int i = 0; i < n; i++)
-            {
-                int gravedad = random.Next(1, 10);
-                heap.Insert(new Paciente(gravedad));
-            }
-
-            Console.WriteLine("Datos generados. Iniciando HeapSort...");
+            long memoria = MemoriaArreglo(arreglo);
 
             var inicio = DateTime.Now;
-            heap.Ordenar();
+            HeapSort(arreglo);
             var fin = DateTime.Now;
 
-            TimeSpan t = fin - inicio;
+            Console.Write("Ordenado: ");
+            PrintArrayParcial(arreglo);
 
-            Console.WriteLine($"\nHeapSort completado.");
-            Console.WriteLine($"Cantidad total: {n}");
-            Console.WriteLine($"Tiempo: {t.TotalMilliseconds} ms");
-            Console.WriteLine($"Tiempo: {t.TotalSeconds} s");
-            Console.WriteLine($"Consumo de memoria en bytes: {GC.GetTotalMemory(false)}");
-            // Mostrar resultados
-            Console.Write($"\nPrimeros 20 valores ordenados: ");
-            var ordenados = heap.GetGravedades();
-            for (int i = 0; i < Math.Min(20, ordenados.Count); i++)
-                Console.Write(ordenados[i] + " ");
-
-            Console.WriteLine("\n\n(Visualización limitada para evitar saturar la consola)");
+            Console.WriteLine($"Tiempo: {(fin - inicio).TotalMilliseconds} ms");
+            Console.WriteLine($"Memoria del arreglo: {memoria} bytes ({memoria / 1024.0 / 1024.0:F2} MB)");
+            Console.WriteLine();
         }
+
+        MedirCaso("Caso promedio", () =>
+        {
+            int[] arr = new int[n];
+            for (int i = 0; i < n; i++)
+                arr[i] = random.Next(1, 1_000_000);
+            return arr;
+        });
+
+        MedirCaso("Mejor caso", () =>
+        {
+            int[] arr = new int[n];
+            for (int i = 0; i < n; i++)
+                arr[i] = n - i;
+            return arr;
+        });
+
+        MedirCaso("Peor caso", () =>
+        {
+            int[] arr = new int[n];
+            for (int i = 0; i < n; i++)
+                arr[i] = i + 1;
+            return arr;
+        });
     }
 }
