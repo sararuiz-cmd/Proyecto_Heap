@@ -49,7 +49,7 @@ class HeapSortExample
 
     static void Main()
     {
-        int n = 1_000_000;
+        int n = 10000000;
         Random random = new Random();
 
         void MedirCaso(string nombre, Func<int[]> generar)
@@ -70,7 +70,8 @@ class HeapSortExample
             PrintArrayParcial(arreglo);
 
             Console.WriteLine($"Tiempo: {(fin - inicio).TotalMilliseconds} ms");
-            Console.WriteLine($"Memoria del arreglo: {memoria} bytes ({memoria / 1024.0 / 1024.0:F2} MB)");
+            Console.WriteLine($"Tiempo (segundos): {(fin - inicio).TotalSeconds:F6} s");
+            Console.WriteLine($"Memoria del arreglo: {memoria} bytes ({memoria / 1024.0:F2} kB)");
             Console.WriteLine();
         }
 
@@ -78,7 +79,7 @@ class HeapSortExample
         {
             int[] arr = new int[n];
             for (int i = 0; i < n; i++)
-                arr[i] = random.Next(1, 1_000_000);
+                arr[i] = random.Next(1, 1_000_000_000);
             return arr;
         });
 
