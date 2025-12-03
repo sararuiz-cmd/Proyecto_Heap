@@ -81,7 +81,7 @@ namespace HeapGravedad
     {
         static void Main(string[] args)
         {
-            int n = 10;
+            int n = 1000000;
             Random random = new Random();
             MaxHeap heap = new MaxHeap();
 
@@ -89,7 +89,7 @@ namespace HeapGravedad
 
             for (int i = 0; i < n; i++)
             {
-                int gravedad = random.Next(1, n);
+                int gravedad = random.Next(1, 10);
                 heap.Insert(new Paciente(gravedad));
             }
 
@@ -107,7 +107,7 @@ namespace HeapGravedad
             Console.WriteLine($"Tiempo: {t.TotalSeconds} s");
             Console.WriteLine($"Consumo de memoria en bytes: {GC.GetTotalMemory(false)}");
             // Mostrar resultados
-            Console.Write($"\nPrimeros {n} valores ordenados: ");
+            Console.Write($"\nPrimeros 20 valores ordenados: ");
             var ordenados = heap.GetGravedades();
             for (int i = 0; i < Math.Min(20, ordenados.Count); i++)
                 Console.Write(ordenados[i] + " ");
